@@ -11,7 +11,7 @@ namespace Bangazon_BE.Models
         public string? Description { get; set; }
         public decimal PricePerUnit { get; set; }
         public int QuantityAvailable { get; set; }
-        public ICollection<Order>? Orders { get; set; }
+        public List<Orders> Orders { get; set;}
         public DateTime ReleaseDate { get; set; }
 
     }

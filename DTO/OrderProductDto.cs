@@ -3,7 +3,7 @@ namespace Bangazon_BE.DTO
 { 
     public class OrderProductDto
     { 
-        public int ProductId { get; set; }
-        public int OrderId { get; set; }
+        public int ProductsId { get; set; }
+        public int UserId { get; set; }
     }
 }

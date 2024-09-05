@@ -1,7 +1,6 @@
 ﻿using System.Runtime.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Bangazon_BE.Models;
-using Bangazon_BE.DTO;
 
 namespace Bangazon_BE.API
 {

@@ -1,13 +1,13 @@
 ﻿using System.Runtime.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Bangazon_BE.Models;
-using Bangazon_BE.DTO;
+using System.Threading.Channels;
+using Bangazon_BE.Migrations;
 
 namespace Bangazon_BE.API
 {
     public class OrdersAPI
     {
-        private static object addUserMovieDto;
 
         public static void Map(WebApplication app)
         {
@@ -21,7 +21,7 @@ namespace Bangazon_BE.API
             // GET ORDER BY ID
             app.MapGet("/api/order/{id}", (BangazonDbContext db, int id) =>
             {
-                Order order = db.Orders.FirstOrDefault(o => o.Id == id);
+                Orders order = db.Orders.FirstOrDefault(o => o.Id == id);
                 if (order == null)
                 {
                     return Results.NotFound();
@@ -29,72 +29,35 @@ namespace Bangazon_BE.API
                 return Results.Ok(order);
             });
 
-            //GET CART
-            app.MapGet("/api/cart/{userId}", (BangazonDbContext db, int userId) =>
+            // GET ORDER BY UID
+
+            app.MapGet("api/order/{userId}", (BangazonDbContext db, int userId) =>
             {
-                return db.Orders
-                        .Include(o => o.Products)
-                        .SingleOrDefault(o => o.UserId == userId && o.Closed == false);
-            });
-
-            // ADDING PRODUCT TO ORDER (CART)
-            app.MapPost("/api/order/addProduct", (BangazonDbContext db, OrderProductDto orderProduct) =>
-            {
-                 var orderToUpdate = db.Orders
-                 .Include(o => o.Products)
-                 .FirstOrDefault(o => o.Id == orderProduct.OrderId);
-                 var addProduct = db.Products.FirstOrDefault(op => op.Id == orderProduct.ProductId);
-                try
-                 {
-                    orderToUpdate.Products.Add(addProduct);
-                   db.SaveChanges();
-                    return Results.NoContent();
-                }
-               catch (DbUpdateException)
-                {
-                   return Results.BadRequest("Invalid data submitted");
-               }
-           });
-
-
-
-            // GET CLOSED ORDERS
-            app.MapGet("api/user/{userId}/order-history", (BangazonDbContext db, int userId) =>
-            {
-                List<Order> orders = db.Orders
-                .Include(o => o.Products)
-                .Where(o => o.UserId == userId && o.Closed == true)
-                .ToList();
-
-                if (orders == null)
+                Orders order = db.Orders.FirstOrDefault(o => o.UserId == userId);
+                if (order == null)
                 {
                     return Results.NotFound();
                 }
-                return Results.Ok(orders);
+                return Results.Ok(order);
             });
 
-            //REMOVE PRODUCT FROM CART
-            app.MapDelete("/api/order/{orderId}/deleteProduct/{productId}", (BangazonDbContext db, int orderId, int productId) =>
+            //get cutomer's completed orders with the details, by customer id
+            app.MapGet("/api/closedOrders/customers/{id}", (BangazonDbContext db, int id) =>
             {
-                var singleOrderToUpdate = db.Orders
+                return db.Orders
                 .Include(o => o.Products)
-                .FirstOrDefault(o => o.Id == orderId);
-                var productToDelete = db.Products.FirstOrDefault(p => p.Id == productId);
+                .Where(o => o.Closed == true && o.Id == id)
+                .ToList();
 
-                try
-                {
-                    singleOrderToUpdate.Products.Remove(productToDelete);
-                    db.SaveChanges();
-                    return Results.NoContent();
-
-                }
-                catch (DbUpdateException)
-                {
-                    return Results.BadRequest("Invalid data submitted");
-                }
             });
-            app.Run();
 
+            // POST ORDER
+            app.MapPost("/api/order", (BangazonDbContext db, Orders order) =>
+            {
+                db.Orders.Add(order);
+                db.SaveChanges();
+                return Results.Created($"/api/order/{order.Id}", order);
+            });
         }
     }
 }

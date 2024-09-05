@@ -1,16 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Bangazon_BE.API;
 
 namespace Bangazon_BE.Models
 {
-    public class Order
+    public class Orders
     {
-        public int Id { get; set; }
-        [Required]
-        public int UserId { get; set; }
-        public int PaymentTypeId { get; set; }
+        public int? Id { get; set; }
+        public int? UserId { get; set; }
+        public string? PaymentType { get; set; }
         public DateTime DateCreated { get; set; }
+        public string? Shipping {  get; set; }
         public bool Closed { get; set; }
-        public ICollection<Product>? Products { get; set; }
+        public List<Product>? Products { get; set; }
         public decimal? TotalCost
         {
             get
